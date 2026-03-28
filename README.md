@@ -4,14 +4,6 @@
   <strong>Your GitHub profile as a 3D pixel art building in an interactive city.</strong>
 </p>
 
-<p align="center">
-  <a href="http://localhost:3001">localhost:3001</a>
-</p>
-
-<p align="center">
-  <img src="public/og-image.png" alt="Github World — Where Code Builds Cities" width="800" />
-</p>
-
 ---
 
 ## What is Github World?
@@ -78,9 +70,7 @@ Open [http://localhost:3001](http://localhost:3001) to see the city.
 
 ## License
 
-[AGPL-3.0](LICENSE) — You can use and modify Github World, but any public deployment must share the source code.
-
----
+MIT
 
 <p align="center">
   Built by <a href="https://github.com/krishnashahane">Krishna Shahane</a>
