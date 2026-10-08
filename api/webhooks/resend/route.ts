@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { Webhook } from "svix";
 
 export const dynamic = "force-dynamic";
 
@@ -9,22 +10,23 @@ export const dynamic = "force-dynamic";
  * Updates notification_log delivery lifecycle and notification_suppressions.
  */
 export async function POST(request: Request) {
-  // Verify webhook secret (set in Resend dashboard)
   const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
-  if (webhookSecret) {
-    const sig = request.headers.get("svix-signature");
-    if (!sig) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 401 });
-    }
-    // For production, use Resend's webhook verification SDK.
-    // For now, we rely on the webhook URL being secret.
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
+
+  const rawBody = await request.text();
+  const svixHeaders = {
+    "svix-id": request.headers.get("svix-id") ?? "",
+    "svix-timestamp": request.headers.get("svix-timestamp") ?? "",
+    "svix-signature": request.headers.get("svix-signature") ?? "",
+  };
 
   let body: { type: string; data: Record<string, unknown> };
   try {
-    body = await request.json();
+    body = new Webhook(webhookSecret).verify(rawBody, svixHeaders) as typeof body;
   } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 401 });
   }
 
   const sb = getSupabaseAdmin();
