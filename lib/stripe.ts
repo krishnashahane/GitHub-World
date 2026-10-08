@@ -6,7 +6,8 @@ let stripeInstance: Stripe | null = null;
 function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
+  if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
+  throw new Error("NEXT_PUBLIC_BASE_URL or VERCEL_URL must be configured in production");
 }
 
 export function getStripe(): Stripe {
