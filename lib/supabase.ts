@@ -5,7 +5,8 @@ let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 
 /** Check if we're running in mock mode (no Supabase configured) */
 export function isMockMode(): boolean {
-  return !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_MOCK_MODE === "true";
+  if (process.env.NEXT_PUBLIC_MOCK_MODE === "true") return true;
+  return !process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NODE_ENV !== "production";
 }
 
 /** Client-side Supabase client (anon key, respects RLS) — singleton for "use client" */
