@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import crypto from "crypto";
 
@@ -8,15 +9,7 @@ function timingSafeEqual(a: string, b: string): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
-  }
-
-  const auth = request.headers.get("authorization") ?? "";
-  const expected = `Bearer ${secret}`;
-
-  if (auth.length !== expected.length || !timingSafeEqual(auth, expected)) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
