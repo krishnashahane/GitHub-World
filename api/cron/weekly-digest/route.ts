@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendNotificationAsync } from "@/lib/notifications";
 import { buildButton, buildStatsTable } from "@/lib/email-template";
@@ -9,8 +10,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://localhost:3001";
  * Cron: Monday 10:00 UTC - Weekly recap email for active developers.
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
