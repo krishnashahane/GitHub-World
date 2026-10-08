@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { getGithubLogin } from "@/lib/github-identity";
 
 export async function POST() {
   const supabase = await createServerSupabase();
@@ -12,11 +13,7 @@ export async function POST() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const githubLogin = (
-    user.user_metadata.user_name ??
-    user.user_metadata.preferred_username ??
-    ""
-  ).toLowerCase();
+  const githubLogin = getGithubLogin(user);
 
   if (!githubLogin) {
     return NextResponse.json(
