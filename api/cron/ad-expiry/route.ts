@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendAdExpiringEmail, sendAdExpiredEmail } from "@/lib/ad-emails";
 
 export async function GET(request: NextRequest) {
   // Verify Vercel Cron secret
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
