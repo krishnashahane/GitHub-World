@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { getGithubLogin } from "@/lib/github-identity";
 import { ZONE_ITEMS } from "@/lib/zones";
 
 export async function GET(request: Request) {
@@ -35,11 +36,7 @@ export async function POST(request: Request) {
   }
 
   const admin = getSupabaseAdmin();
-  const githubLogin = (
-    user.user_metadata.user_name ??
-    user.user_metadata.preferred_username ??
-    ""
-  ).toLowerCase();
+  const githubLogin = getGithubLogin(user);
 
   const { data: dev } = await admin
     .from("developers")
