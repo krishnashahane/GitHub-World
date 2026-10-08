@@ -153,6 +153,10 @@ export async function POST() {
   const githubLogin = getGithubLogin(user);
 
   if (!githubLogin) {
+    return NextResponse.json({ error: "No GitHub identity in authenticated session" }, { status: 400 });
+  }
+
+  if (!githubLogin) {
     return NextResponse.json({ error: "No GitHub login" }, { status: 400 });
   }
 
