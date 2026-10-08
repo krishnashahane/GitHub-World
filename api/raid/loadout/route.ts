@@ -28,6 +28,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
     const githubLogin = getGithubLogin(user);
+
+  if (!githubLogin) {
+    return NextResponse.json({ error: "No GitHub identity in authenticated session" }, { status: 400 });
+  }
     const { data: dev } = await admin
       .from("developers")
       .select("id")
