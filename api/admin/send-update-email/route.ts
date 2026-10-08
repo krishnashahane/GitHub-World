@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { getResend } from "@/lib/resend";
 import { getDeveloperEmail } from "@/lib/notification-helpers";
@@ -16,8 +17,7 @@ const FROM = "Github World <noreply@localhost:3001>";
  * Body: { subject: string, html: string, slug: string }
  */
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
