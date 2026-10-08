@@ -1,77 +1,122 @@
-<h1 align="center">Github World</h1>
+<h1 align="center">GitHub World</h1>
 
-<p align="center">
-  <strong>Your GitHub profile as a 3D pixel art building in an interactive city.</strong>
-</p>
+<p align="center"><strong>Your GitHub profile becomes a 3D pixel-art building in an interactive city.</strong></p>
 
----
+GitHub World combines GitHub developer data with a browser-based 3D city, progression systems, achievements, social interactions, customization, and optional payments.
 
-## What is Github World?
+## What it does
 
-Github World transforms every GitHub profile into a unique pixel art building. The more you contribute, the taller your building grows. Explore an interactive 3D city, fly between buildings, and discover developers from around the world.
+- 3D pixel-art buildings generated from GitHub activity.
+- Profile pages, ranks, achievements, streaks, districts, and social interactions.
+- Building customization, loadouts, shop items, gifts, and optional ad purchases.
+- GitHub OAuth through Supabase Auth.
+- PostgreSQL persistence through Supabase and Row Level Security.
+- Stripe, AbacatePay, and NOWPayments integrations when configured.
+- Scheduled jobs for snapshots, notifications, cleanup, and digests.
 
-## Features
+## Stack
 
-- **3D Pixel Art Buildings** — Each GitHub user becomes a building with height based on contributions, width based on repos, and lit windows representing activity
-- **Free Flight Mode** — Fly through the city with smooth camera controls, visit any building, and explore the skyline
-- **Profile Pages** — Dedicated pages for each developer with stats, achievements, and top repositories
-- **Achievement System** — Unlock achievements based on contributions, stars, repos, referrals, and more
-- **Building Customization** — Claim your building and customize it with items from the shop (crowns, auras, roof effects, face decorations)
-- **Social Features** — Send kudos, gift items to other developers, refer friends, and see a live activity feed
-- **Compare Mode** — Put two developers side by side and compare their buildings and stats
-- **Share Cards** — Download shareable image cards of your profile in landscape or stories format
+- Next.js 15.5.27 App Router
+- React 19
+- Three.js + React Three Fiber + drei
+- Supabase Auth/Postgres/Realtime/Storage
+- Stripe and optional alternative payment providers
+- Tailwind CSS 4
 
-## How Buildings Work
+Next.js 15.5.27 is the patched 15.5 maintenance release. Versions below 15.5.27 are affected by September 2026 security fixes, including cache-poisoning issues; the project is pinned to 15.5.27. citeturn771293search0turn771293search4
 
-| Metric         | Affects           | Example                                |
-|----------------|-------------------|----------------------------------------|
-| Contributions  | Building height   | 1,000 commits = taller building        |
-| Public repos   | Building width    | More repos = wider base                |
-| Stars          | Window brightness | More stars = more lit windows           |
-| Activity       | Window pattern    | Recent activity = distinct glow pattern |
+## Requirements
 
-## Tech Stack
+- Node.js 20.9+
+- npm
+- A Supabase project for production features
+- Provider credentials for the integrations you enable
 
-- **Framework:** [Next.js](https://nextjs.org) 16 (App Router, Turbopack)
-- **3D Engine:** [Three.js](https://threejs.org) via [@react-three/fiber](https://github.com/pmndrs/react-three-fiber) + [drei](https://github.com/pmndrs/drei)
-- **Database & Auth:** [Supabase](https://supabase.com) (PostgreSQL, GitHub OAuth, Row Level Security)
-- **Payments:** [Stripe](https://stripe.com)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com) v4 with pixel font (Silkscreen)
-- **Hosting:** [Vercel](https://vercel.com)
+## Local development
 
-## Getting Started
+Clone and install:
 
 ```bash
-# Clone the repo
-git clone https://github.com/krishnashahane/github-world.git
-cd github-world
-
-# Install dependencies
+git clone https://github.com/krishnashahane/GitHub-World.git
+cd GitHub-World
 npm install
-
-# Set up environment variables
-
-# Linux / macOS
 cp .env.example .env.local
+```
 
-# Windows (Command Prompt)
-copy .env.example .env.local
+Fill in the required environment variables, then run:
 
-# Windows (PowerShell)
-Copy-Item .env.example .env.local
-
-# Fill in Supabase and Stripe keys
-
-# Run the dev server
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3001](http://localhost:3001) to see the city.
+Open **http://localhost:3001**.
+
+Production build:
+
+```bash
+npm run build
+npm start
+```
+
+The project uses `npm install` rather than `npm ci` because the previous lockfile tracked an outdated Next.js version and was removed during the security upgrade. A fresh install regenerates a consistent lockfile from the patched dependency set.
+
+## Required production configuration
+
+At minimum configure:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_APP_URL`
+- `CRON_SECRET`
+
+Configure payment/email/GitHub secrets only for features you enable.
+
+Never expose `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, webhook secrets, or other server-only credentials through `NEXT_PUBLIC_*` variables.
+
+## Security hardening
+
+- Production cannot silently fall back to Supabase mock mode.
+- Authenticated mutation routes resolve GitHub identity from the authenticated GitHub OAuth identity rather than mutable profile metadata.
+- Cron endpoints use centralized constant-time secret validation.
+- Resend webhooks verify their Svix signature before processing events.
+- Stripe and NOWPayments webhooks verify provider signatures.
+- Stripe production checkout URLs require an explicit public base URL instead of defaulting to localhost.
+- API rate limiting and browser security headers are enabled in middleware/config.
+- Service-role Supabase access is kept server-side.
+- Uploads are authenticated, ownership-checked, type-limited, and size-limited.
+- Exact remote image hosts are allowlisted in Next.js image configuration.
+
+## Database
+
+The `supabase/migrations` directory contains the schema evolution used by the application. Apply migrations to a Supabase project before enabling production features.
+
+After changing database schema or migrations, validate the complete migration chain against a clean Supabase database before deploying.
+
+## Scheduled jobs
+
+Vercel cron jobs are declared in `vercel.json`. They require `CRON_SECRET` and should not be exposed as unauthenticated public endpoints.
+
+## Project structure
+
+```text
+admin/          Admin pages and management UI
+api/            Route handlers
+app/            Next.js application routes
+components/     Reusable UI and 3D components
+lib/            Auth, Supabase, payments, notifications, game logic
+public/         Static assets and models
+supabase/       Database migrations
+middleware.ts   Rate limiting and security headers
+vercel.json     Scheduled jobs
+```
+
+## Notes
+
+The repository contains generated TypeScript build metadata in older revisions; `*.tsbuildinfo` and other build artifacts are now ignored.
+
+Some features intentionally degrade in local mock mode, but production requires real Supabase configuration and does not silently pretend to be connected.
 
 ## License
 
 MIT
-
-<p align="center">
-  Built by <a href="https://github.com/krishnashahane">Krishna Shahane</a>
-</p>
