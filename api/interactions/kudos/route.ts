@@ -32,6 +32,10 @@ export async function POST(request: Request) {
 
   const githubLogin = getGithubLogin(user);
 
+  if (!githubLogin) {
+    return NextResponse.json({ error: "No GitHub identity in authenticated session" }, { status: 400 });
+  }
+
   // Fetch giver (must have claimed building)
   const { data: giver } = await admin
     .from("developers")
