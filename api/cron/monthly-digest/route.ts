@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendNotificationAsync } from "@/lib/notifications";
 import { buildButton, buildStatsTable } from "@/lib/email-template";
@@ -14,8 +15,7 @@ const MONTH_NAMES = [
  * Cron: 1st of month 10:00 UTC - Monthly highlights email.
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
