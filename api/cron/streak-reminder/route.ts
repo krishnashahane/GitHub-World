@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron-auth";
 import { getSupabaseAdmin } from "@/lib/supabase";
 import { sendStreakReminderNotification } from "@/lib/notification-senders/streak-reminder";
 import { sendDailiesReminderNotification } from "@/lib/notification-senders/dailies-reminder";
@@ -8,8 +9,7 @@ import { sendDailiesReminderNotification } from "@/lib/notification-senders/dail
  * and have a streak >= 3.
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorizedCron(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
