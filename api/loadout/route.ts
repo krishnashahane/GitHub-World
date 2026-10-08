@@ -38,6 +38,10 @@ export async function POST(request: Request) {
   const admin = getSupabaseAdmin();
   const githubLogin = getGithubLogin(user);
 
+  if (!githubLogin) {
+    return NextResponse.json({ error: "No GitHub identity in authenticated session" }, { status: 400 });
+  }
+
   const { data: dev } = await admin
     .from("developers")
     .select("id, claimed, claimed_by")
